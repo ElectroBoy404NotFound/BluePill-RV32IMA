@@ -13,6 +13,26 @@ SPIClass PSRAM(2);
 #define PSRAM_CMD_WRITE 0x02
 #define PSRAM_KGD 0x5D
 
+void readID() {
+  digitalWrite(PSRAM_CS, LOW);
+  
+  // Send command to read Chip ID
+  PSRAM.transfer(0x9F); // Manufacturer ID read command
+  
+  // Read the Chip ID bytes
+  uint8_t manufacturerID = PSRAM.transfer(0x00);
+  uint16_t deviceID = (PSRAM.transfer(0x00) << 8) | PSRAM.transfer(0x00);
+  
+  // Deselect PSRAM
+  digitalWrite(PSRAM_CS, HIGH);
+  
+  // Print the Chip ID
+  Serial.print("Manufacturer ID: 0x");
+  Serial.println(manufacturerID, HEX);
+  Serial.print("Device ID: 0x");
+  Serial.println(deviceID, HEX);
+}
+
 void initPSRAM() {
   PSRAM.begin();
   PSRAM.setBitOrder(MSBFIRST);
@@ -27,6 +47,8 @@ void initPSRAM() {
   digitalWrite(PSRAM_CS, LOW);
   PSRAM.transfer(PSRAM_CMD_RESET);
   digitalWrite(PSRAM_CS, HIGH);
+  delay(100);
+  readID();
   delay(10);
 }
 
